@@ -1,0 +1,26 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/video_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal" >
+
+    <SurfaceView
+        android:id="@+id/video"
+        android:layout_width="200dip"
+        android:layout_height="200dip"
+        android:layout_centerInParent="true"
+        android:fitsSystemWindows="true" />
+
+    
+
+
+
+    <GridView
+        android:id="@+id/gridView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:horizontalSpacing="2dp"
+        android:numColumns="3"
+        android:verticalSpacing="2dp" 
+        android:descendantFocusability="blocksDescendants"/>
+</RelativeLayout>
