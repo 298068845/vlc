@@ -11,9 +11,6 @@
         android:layout_centerInParent="true"
         android:fitsSystemWindows="true" />
 
-    
-
-
 
     <GridView
         android:id="@+id/gridView"
@@ -23,4 +20,13 @@
         android:numColumns="3"
         android:verticalSpacing="2dp" 
         android:descendantFocusability="blocksDescendants"/>
+
+    <SurfaceView
+        android:id="@+id/video2"
+        android:layout_width="200dip"
+        android:layout_height="200dip"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:fitsSystemWindows="true" />
+
 </RelativeLayout>

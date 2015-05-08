@@ -25,9 +25,10 @@ public final class R {
     }
     public static final class id {
         public static final int gridView=0x7f070002;
-        public static final int itemImage=0x7f070003;
-        public static final int itemName=0x7f070004;
+        public static final int itemImage=0x7f070004;
+        public static final int itemName=0x7f070005;
         public static final int video=0x7f070001;
+        public static final int video2=0x7f070003;
         public static final int video_root=0x7f070000;
     }
     public static final class layout {

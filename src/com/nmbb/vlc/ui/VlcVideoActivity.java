@@ -24,6 +24,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
+import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -42,9 +43,10 @@ import com.nmbb.vlc.R;
 public class VlcVideoActivity extends Activity implements SurfaceHolder.Callback, IVideoPlayer {
 
 	private final static String TAG = "[VlcVideoActivity]";
-	private SurfaceView mSurfaceView;
+	private Callback callback;
+	private SurfaceView mSurfaceView,mSurfaceView2;
 	private LibVLC mMediaPlayer;
-	private SurfaceHolder mSurfaceHolder;
+	private SurfaceHolder mSurfaceHolder,mSurfaceHolder2;
     private View mLoadingView;
 	private int mVideoHeight;
 	private int mVideoWidth;
@@ -61,29 +63,37 @@ public class VlcVideoActivity extends Activity implements SurfaceHolder.Callback
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_video_vlc);
+		callback = this;
         gridView = (GridView) this.findViewById(R.id.gridView);
 		mSurfaceView = (SurfaceView) findViewById(R.id.video);
+		mSurfaceView2 = (SurfaceView) findViewById(R.id.video2);
 		try {
 			mMediaPlayer = VLCInstance.getLibVlcInstance();
 		} catch (LibVlcException e) {
 			e.printStackTrace();
 		}
-		
+
 		mSurfaceHolder = mSurfaceView.getHolder();
 		mSurfaceHolder.setFormat(PixelFormat.RGBX_8888);
 		mSurfaceHolder.addCallback(this);
 		mSurfaceView.setZOrderOnTop(true);
+		mSurfaceView2.setZOrderOnTop(true);
+
 		mMediaPlayer.eventVideoPlayerActivityCreated(true);
 		
 		EventHandler em = EventHandler.getInstance();
 		em.addHandler(mVlcHandler);
 		this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
 		mSurfaceView.setKeepScreenOn(true);
+		mSurfaceView2.setKeepScreenOn(true);
+
 		//		mMediaPlayer.setMediaList();
 				mMediaPlayer.getMediaList().add(new Media(mMediaPlayer, "http://live.3gv.ifeng.com/zixun.m3u8"), false);
 				mMediaPlayer.getMediaList().add(new Media(mMediaPlayer, "http://vshare.ys7.com:80/hcnp/504143029_2_2_1_0_183.136.184.7_6500.m3u8"), false);
 
 				mMediaPlayer.playIndex(0);
+
+
 		//mMediaPlayer.playMRL("http://live.3gv.ifeng.com/zixun.m3u8");
 //		mSurfaceView.setOnTouchListener(new OnTouchListener() {
 //			
@@ -107,66 +117,55 @@ public class VlcVideoActivity extends Activity implements SurfaceHolder.Callback
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View v, int arg2,
 					long arg3) {
-				int index = arg2 + 1;// 
+				mSurfaceHolder = mSurfaceView2.getHolder();
+				mSurfaceHolder.setFormat(PixelFormat.RGBX_8888);
+				mSurfaceHolder.addCallback(callback);
+				mMediaPlayer.playMRL("http://live.3gv.ifeng.com/zixun.m3u8");
 
-
-				if(index==curposition)
-				{
-					if(flag==0){
-					mCurrentSize=SURFACE_BEST_FIT;flag=1;
-//					changeSurfaceSize();
-//					RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams)mSurfaceView.getLayoutParams(); 
-//					lp.setMargins(338, 150, 0, 0);
+//				int index = arg2 + 1;// 
+//
+//
+//				if(index==curposition)
+//				{
+//					if(flag==0){
+//					mCurrentSize=SURFACE_BEST_FIT;flag=1;
+//					curX=v.getX()+50;curY=v.getY()-10;
+//					RelativeLayout.LayoutParams lp = (LayoutParams) mSurfaceView.getLayoutParams();
+//					lp.width = 910;
+//					lp.height =560;
 //					mSurfaceView.setLayoutParams(lp);
-					curX=v.getX()+50;curY=v.getY()-10;
-					RelativeLayout.LayoutParams lp = (LayoutParams) mSurfaceView.getLayoutParams();
-					lp.width = 910;
-					lp.height =560;
-					mSurfaceView.setLayoutParams(lp);
-					mSurfaceView.setX(338);
-					mSurfaceView.setY(150);					
-								}
-					else{
-					mCurrentSize=SURFACE_SMALL;flag=0;
-//					changeSurfaceSize();
-//					RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams)mSurfaceView.getLayoutParams(); 
-//					lp.setMargins((int)curX,(int)curY, 0, 0);
-//					mSurfaceView.setLayoutParams(lp);		
-					RelativeLayout.LayoutParams lp = (LayoutParams) mSurfaceView.getLayoutParams();
-					lp.width = 170;
-					lp.height =170;
-					mSurfaceView.setLayoutParams(lp);
-					mSurfaceView.setX(curX-340);
-					mSurfaceView.setY(curY-170);
-					}
-				}// Toast.makeText(getApplicationContext(), "正在播放摄像头" + index, 0).show();
-				else if(flag!=1){
-					curposition=index;
-					if(curposition%2==0){
-						mMediaPlayer.stop();
-						Canvas canvas=mSurfaceHolder.lockCanvas();	
-						canvas.drawColor(Color.TRANSPARENT);
-						mMediaPlayer.playIndex(1);
-	              				}
-					else{
-						mMediaPlayer.stop();
-						Canvas canvas=mSurfaceHolder.lockCanvas();	
-						canvas.drawColor(Color.TRANSPARENT);
-						mMediaPlayer.playIndex(0);
-					}
-						
-					mSurfaceView.setX(v.getX()+50);
-					mSurfaceView.setY(v.getY()-10);
-//					RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams)mSurfaceView.getLayoutParams(); 
-//					lp.setMargins((int)curX,(int) curY, 0, 0);
+//					mSurfaceView.setX(338);
+//					mSurfaceView.setY(150);					
+//								}
+//					else{
+//					mCurrentSize=SURFACE_SMALL;flag=0;
+//					RelativeLayout.LayoutParams lp = (LayoutParams) mSurfaceView.getLayoutParams();
+//					lp.width = 170;
+//					lp.height =170;
 //					mSurfaceView.setLayoutParams(lp);
-				}
-				else{
-					mCurrentSize=SURFACE_SMALL;flag=0;
-					changeSurfaceSize();
-					mSurfaceView.setX(curX-340);
-					mSurfaceView.setY(curY-170);
-				}
+//					mSurfaceView.setX(curX-340);
+//					mSurfaceView.setY(curY-170);
+//					}
+//				}// Toast.makeText(getApplicationContext(), "正在播放摄像头" + index, 0).show();
+//				else if(flag!=1){
+//					curposition=index;
+//					if(curposition%2==0){
+//						mMediaPlayer.stop();
+//						mMediaPlayer.playIndex(1);
+//	              				}
+//					else{
+//						mMediaPlayer.stop();
+//						mMediaPlayer.playIndex(0);
+//					}
+//						
+//
+//				}
+//				else{
+//					mCurrentSize=SURFACE_SMALL;flag=0;
+//					changeSurfaceSize();
+//					mSurfaceView.setX(curX-340);
+//					mSurfaceView.setY(curY-170);
+//				}
 			}
 		});
 	}
@@ -359,11 +358,18 @@ public class VlcVideoActivity extends Activity implements SurfaceHolder.Callback
 		}
 
 		mSurfaceHolder.setFixedSize(mVideoWidth, mVideoHeight);
+		//mSurfaceHolder2.setFixedSize(mVideoWidth, mVideoHeight);
+
 		ViewGroup.LayoutParams lp = mSurfaceView.getLayoutParams();
 		lp.width = dw;
 		lp.height = dh;
 		mSurfaceView.setLayoutParams(lp);
 		mSurfaceView.invalidate();
+		ViewGroup.LayoutParams lp2 = mSurfaceView2.getLayoutParams();
+		lp2.width = dw;
+		lp2.height = dh;
+		mSurfaceView2.setLayoutParams(lp2);
+		mSurfaceView2.invalidate();
 	}
 	
 	private List<Map<String, Object>> getData() {
