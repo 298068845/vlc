@@ -44,7 +44,9 @@ public class VlcVideoActivity extends Activity implements SurfaceHolder.Callback
 
 	private final static String TAG = "[VlcVideoActivity]";
 	private Callback callback;
-	private SurfaceView mSurfaceView,mSurfaceView2;
+	int[] listImg = new int[] { R.drawable.video, R.drawable.video, R.drawable.video, R.drawable.video, R.drawable.video, R.drawable.video };
+    String[] listName = new String[] { "摄像头1", "摄像头2", "摄像头3", "摄像头4", "摄像头5", "摄像头6"};
+	private SurfaceView mSurfaceView[]= new SurfaceView[6];
 	private LibVLC mMediaPlayer;
 	private SurfaceHolder mSurfaceHolder,mSurfaceHolder2;
     private View mLoadingView;
@@ -59,33 +61,32 @@ public class VlcVideoActivity extends Activity implements SurfaceHolder.Callback
     private int curposition=5;
     private float curX,curY;
     private float midX,midY;
+    IVideoPlayer iv;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_video_vlc);
 		callback = this;
         gridView = (GridView) this.findViewById(R.id.gridView);
-		mSurfaceView = (SurfaceView) findViewById(R.id.video);
-		mSurfaceView2 = (SurfaceView) findViewById(R.id.video2);
+        for(int i = 0;i<6;i++){
+		mSurfaceView[i] = (SurfaceView) findViewById(R.id.video1+i);
+		mSurfaceView[i].setKeepScreenOn(true);
+		mSurfaceView[i].setZOrderOnTop(true);
+        }
 		try {
 			mMediaPlayer = VLCInstance.getLibVlcInstance();
 		} catch (LibVlcException e) {
 			e.printStackTrace();
 		}
-
-		mSurfaceHolder = mSurfaceView.getHolder();
+		iv = this;
+		mSurfaceHolder = mSurfaceView[0].getHolder();
 		mSurfaceHolder.setFormat(PixelFormat.RGBX_8888);
 		mSurfaceHolder.addCallback(this);
-		mSurfaceView.setZOrderOnTop(true);
-		mSurfaceView2.setZOrderOnTop(true);
-
 		mMediaPlayer.eventVideoPlayerActivityCreated(true);
 		
 		EventHandler em = EventHandler.getInstance();
 		em.addHandler(mVlcHandler);
 		this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
-		mSurfaceView.setKeepScreenOn(true);
-		mSurfaceView2.setKeepScreenOn(true);
 
 		//		mMediaPlayer.setMediaList();
 				mMediaPlayer.getMediaList().add(new Media(mMediaPlayer, "http://live.3gv.ifeng.com/zixun.m3u8"), false);
@@ -95,33 +96,24 @@ public class VlcVideoActivity extends Activity implements SurfaceHolder.Callback
 
 
 		//mMediaPlayer.playMRL("http://live.3gv.ifeng.com/zixun.m3u8");
-//		mSurfaceView.setOnTouchListener(new OnTouchListener() {
-//			
-//			@Override
-//			public boolean onTouch(View v, MotionEvent event) {
-//				if(flag==0){
-//				Toast.makeText(getApplicationContext(), "点击放大" , 0).show();
-//				flag=1;
-//				}else{
-//					Toast.makeText(getApplicationContext(), "点击缩小" , 0).show();
-//				flag=0;
-//				}				return false;
-//			}
-//		});
+
 		List<Map<String,Object>> item = getData();
-		SimpleAdapter simpleAdapter = new SimpleAdapter(this, item, R.layout.gridviewitem, new String[] { "itemImage", "itemName" }, new int[] { R.id.itemImage, R.id.itemName });
-		simpleAdapter.isEnabled(5);
+		MyAdapter simpleAdapter = new MyAdapter(this,listName,listImg,gridView);
+		simpleAdapter.isEnabled(1);
 		gridView.setAdapter(simpleAdapter);
         gridView.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View v, int arg2,
 					long arg3) {
-				mSurfaceHolder = mSurfaceView2.getHolder();
-				mSurfaceHolder.setFormat(PixelFormat.RGBX_8888);
+				mMediaPlayer.stop();
+				mMediaPlayer.clearBuffer();
+				mMediaPlayer.detachSurface();
+				mSurfaceHolder = mSurfaceView[arg2].getHolder();
 				mSurfaceHolder.addCallback(callback);
+				mMediaPlayer.eventVideoPlayerActivityCreated(true);
+				mMediaPlayer.attachSurface(mSurfaceHolder.getSurface(),iv );
 				mMediaPlayer.playMRL("http://live.3gv.ifeng.com/zixun.m3u8");
-
 //				int index = arg2 + 1;// 
 //
 //
@@ -176,7 +168,7 @@ public class VlcVideoActivity extends Activity implements SurfaceHolder.Callback
 
 		if (mMediaPlayer != null) {
 			mMediaPlayer.stop();
-			mSurfaceView.setKeepScreenOn(false);
+			mSurfaceView[0].setKeepScreenOn(false);
 		}
 	}
 
@@ -200,8 +192,6 @@ public class VlcVideoActivity extends Activity implements SurfaceHolder.Callback
 	public void surfaceCreated(SurfaceHolder holder) {
 		if (mMediaPlayer != null) {
 			mSurfaceHolder = holder;
-			midX=mSurfaceView.getX();
-			midY=mSurfaceView.getY();
 			mMediaPlayer.attachSurface(holder.getSurface(), this);
 		}
 	}
@@ -332,9 +322,8 @@ public class VlcVideoActivity extends Activity implements SurfaceHolder.Callback
 			dw = (int) (dh * ar);
 			break;
 		case SURFACE_SMALL:
-			dw = 170;
-			dh = 170;
-			break;
+			dw = dw/3-15;
+			dh = dh/2-15;
 		case SURFACE_FILL:
 			break;
 		case SURFACE_16_9:
@@ -359,24 +348,20 @@ public class VlcVideoActivity extends Activity implements SurfaceHolder.Callback
 
 		mSurfaceHolder.setFixedSize(mVideoWidth, mVideoHeight);
 		//mSurfaceHolder2.setFixedSize(mVideoWidth, mVideoHeight);
-
-		ViewGroup.LayoutParams lp = mSurfaceView.getLayoutParams();
+		for(int i = 0 ;i<6;i++){
+		ViewGroup.LayoutParams lp = mSurfaceView[i].getLayoutParams();
 		lp.width = dw;
 		lp.height = dh;
-		mSurfaceView.setLayoutParams(lp);
-		mSurfaceView.invalidate();
-		ViewGroup.LayoutParams lp2 = mSurfaceView2.getLayoutParams();
-		lp2.width = dw;
-		lp2.height = dh;
-		mSurfaceView2.setLayoutParams(lp2);
-		mSurfaceView2.invalidate();
+		mSurfaceView[i].setLayoutParams(lp);
+		mSurfaceView[i].invalidate();
+		}
 	}
 	
 	private List<Map<String, Object>> getData() {
         List<Map<String, Object>> items = new ArrayList<Map<String, Object>>();
 
-        int[] listImg = new int[] { R.drawable.video, R.drawable.video, R.drawable.video, R.drawable.video, R.drawable.video, R.drawable.video, R.drawable.video, R.drawable.video, R.drawable.video };
-        String[] listName = new String[] { "摄像头1", "摄像头2", "摄像头3", "摄像头4", "摄像头5", "摄像头6", "摄像头7", "摄像头8", "摄像头9"};
+        int[] listImg = new int[] { R.drawable.video, R.drawable.video, R.drawable.video, R.drawable.video, R.drawable.video, R.drawable.video };
+        String[] listName = new String[] { "摄像头1", "摄像头2", "摄像头3", "摄像头4", "摄像头5", "摄像头6"};
         for (int i = 0; i < listImg.length; i++) {
             Map<String, Object> item = new HashMap<String, Object>();
             item.put("itemImage", listImg[i]);
